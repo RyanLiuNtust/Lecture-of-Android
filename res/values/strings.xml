@@ -4,5 +4,6 @@
     <string name="app_name">lectureOfAndroid</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-
+	<string name="lecture_1">lecture 1</string>
+	<string name="fragment_activity">fragment_activity</string>
 </resources>
