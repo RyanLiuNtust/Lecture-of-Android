@@ -1,5 +1,6 @@
 package com.example.lectureofandroid;
 
+import lectureOfCamera.CameraActivity;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -23,7 +24,7 @@ public class MainActivity extends Activity {
 	}
 	
 	public void Camera(View view) {
-		Intent intent = new Intent(this, Camera.class);
+		Intent intent = new Intent(this, CameraActivity.class);
 		startActivity(intent);
 	}
 }
