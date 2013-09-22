@@ -23,10 +23,10 @@ import android.widget.FrameLayout;
 public class CameraActivity extends Activity {
 	
 	private static final String TAG = "CameraActivity";
-	private Camera mCamera = null;
 	private PictureCallback mPicture = null;
 	private CameraPreview mCameraPreview = null;
 	private CameraFactory mCameraFactory = new CameraFactory();
+	private FrameLayout mPreview = null;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -34,12 +34,13 @@ public class CameraActivity extends Activity {
 		setContentView(R.layout.camera_preview);
 		
 		//get an instance of Camera
-		mCamera = mCameraFactory.getCameraInstance();
+		mCameraFactory.getCameraInstance();
 		
 		//initialize the preview 
-		mCameraPreview = new CameraPreview(this, mCamera);
-		FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
-		preview.addView(mCameraPreview);
+		mCameraPreview = mCameraFactory.new CameraPreview(this);
+		
+		mPreview = (FrameLayout)findViewById(R.id.camera_preview);
+		mPreview.addView(mCameraPreview);
 		
 		//set the data type in jpg and save in specific file directory
 		mPicture = getPictureCallback();
@@ -49,7 +50,8 @@ public class CameraActivity extends Activity {
 		captureButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				mCamera.takePicture(null, null, mPicture);
+				mCameraFactory.takePicture(null, null, mPicture);
+				mCameraFactory.restartPreview();
 			}
 		});
 	}
@@ -57,24 +59,16 @@ public class CameraActivity extends Activity {
 	@Override
 	public void onPause() {
 		super.onPause();
-		uninitalizeCamera();
+		Log.d(TAG,"onPause");
 	}
 	
 	@Override 
 	public void onResume() {
 		super.onResume();
-		
-		if(mCamera == null) {
-			mCamera = mCameraFactory.getCameraInstance();
-		}
-	}
-	
-	private void uninitalizeCamera() {
-		if(mCamera != null) { 
-			mCamera.release();
-		}
-		
-		mCamera = null;
+		Log.d(TAG,"onResume");
+		mCameraFactory.restartPreview();
+		mCameraPreview = mCameraFactory.new CameraPreview(this);
+		mPreview.addView(mCameraPreview);
 	}
 	
 	private PictureCallback getPictureCallback() {
@@ -84,16 +78,14 @@ public class CameraActivity extends Activity {
 				
 				File pictureFile = FilePoolManager.getOutputMediaFile(FilePoolManager.FILE_TYPE_IMAGE);
 				if(pictureFile == null) {
-					Log.d(TAG,"ERROR CREATING FILE, PLS CHECK THE STORAGE PERMISSION");			
-					return ;
+					Log.d(TAG,"Error creating file, pls check the storage permission");			
+					return;
 				}
-				
 				FileOutputStream fos;
 				try {
 					fos = new FileOutputStream(pictureFile);
 					fos.write(data);
 					fos.close();
-					Log.d("ryan","successfully save");
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {

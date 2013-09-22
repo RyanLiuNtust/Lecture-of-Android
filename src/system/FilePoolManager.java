@@ -3,6 +3,9 @@ package system;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.zip.DataFormatException;
 
 import android.net.Uri;
 import android.os.Environment;
@@ -10,7 +13,7 @@ import android.util.Log;
 
 public class FilePoolManager {
 	public final static int FILE_TYPE_IMAGE = 1;
-	public final static int FILE_TYPE_VIDEO  = 2;
+	public final static int FILE_TYPE_VIDEO = 2;
 	private final static String TAG = "FilePoolManager";
 	
 	public static Uri getOutputMediaUri(int type) {
@@ -27,8 +30,11 @@ public class FilePoolManager {
 			}
 		}
 		//Create file name with time
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		String timeStamp = getDateTime();
 		File mediaFile = null;
+		
+		Log.d("ryan","Time:" + timeStamp);
+		
 		if(type == FILE_TYPE_IMAGE) {
 			mediaFile = new File(storageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
 		}
@@ -40,8 +46,12 @@ public class FilePoolManager {
 		else {
 			return null;
 		}
-		
 		return mediaFile;
+	}
+	
+	private final static String getDateTime() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss",Locale.getDefault());
+		return sdf.format(new Date());
 	}
 }
 	
