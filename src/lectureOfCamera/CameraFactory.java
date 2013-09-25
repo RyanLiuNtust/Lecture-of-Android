@@ -2,8 +2,10 @@ package lectureOfCamera;
 
 import java.io.IOException;
 
+import android.R.integer;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.database.CursorJoiner.Result;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -52,7 +54,8 @@ public class CameraFactory {
 		@Override
 		public void surfaceChanged(SurfaceHolder holder, int format, int width,
 				int height) {
-			//If your preview can change or rotate,take care of those events here. 
+			//If your preview can change or rotate,take care of those events here.
+			Log.d(TAG,"surfaceChanged");
 			if(mHolder.getSurface() == null) return;
 			
 			//stop preview before make changes
@@ -60,6 +63,7 @@ public class CameraFactory {
 			
 			//set preview size and make any resize, rotate or reformatting changes here
 			//......
+			initCameraParams(width,height);
 			
 			//start preview with new setting
 			try {
@@ -73,6 +77,7 @@ public class CameraFactory {
 
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
+			Log.d(TAG,"surfaceCreated");
 			try {
 				if(mCamera != null) {
 					mCamera.setPreviewDisplay(holder);
@@ -93,6 +98,38 @@ public class CameraFactory {
 				mCamera.release();
 				mCamera = null;
 			}
+		}
+		
+		private void initCameraParams(int width, int height) {
+			if(mCamera == null) return;
+			
+			Camera.Parameters params = mCamera.getParameters();
+			
+			Camera.Size optimalSize = getOptimalPreviewSize(width, height, params);
+			
+			params.setPreviewSize(optimalSize.width, optimalSize.height);
+			mCamera.setParameters(params);
+		}
+		
+		private Camera.Size getOptimalPreviewSize(int width, int height, Camera.Parameters params) {
+			Camera.Size optimalSize = null;
+			
+			for(Camera.Size size:params.getSupportedPreviewSizes()) {
+				if(size.width<=width && size.height<=height) {
+					if(optimalSize == null) {
+						optimalSize = size;
+					}
+					else {
+						int optimalArea = optimalSize.width * optimalSize.height;
+						int newArea = size.width * size.height;
+						
+						if(newArea > optimalArea) {
+							optimalArea = newArea;
+						}
+					}
+				}
+			}
+			return optimalSize;
 		}
 	}
 }

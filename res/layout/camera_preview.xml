@@ -2,19 +2,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-   >
+    android:layout_height="fill_parent">
    	   <FrameLayout
        android:id="@+id/camera_preview"
-       android:layout_width="fill_parent"
+       android:layout_width="wrap_content"
        android:layout_height="fill_parent"
-       android:layout_weight="1"/>
-   	   
-   	   <Button
+       android:background="@android:color/transparent"
+       />
+       <Button
        android:id="@+id/camera_capture"
        android:text="@string/camera_capture"
-       android:layout_width="wrap_content"
+       android:layout_width="0dp"
        android:layout_height="wrap_content"
-       android:layout_gravity="center"
+       android:layout_gravity="right"
+       android:layout_weight="0.1"
        />
+   	   
+   	   <Button
+   	   android:id="@+id/camera_swithcer"
+   	   android:layout_width="wrap_content"
+   	   android:layout_height="wrap_content"
+   	   android:background="@drawable/camera_switcher_selector"
+   	   android:layout_gravity="bottom"
+   	   />
+       
 </LinearLayout>
