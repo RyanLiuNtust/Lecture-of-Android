@@ -17,6 +17,7 @@ import android.hardware.Camera.PictureCallback;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
    
@@ -27,6 +28,7 @@ public class CameraActivity extends Activity {
 	private CameraPreview mCameraPreview = null;
 	private CameraFactory mCameraFactory = new CameraFactory();
 	private FrameLayout mPreview = null;
+	private Button mCaptureButton = null;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -45,15 +47,10 @@ public class CameraActivity extends Activity {
 		//set the data type in jpg and save in specific file directory
 		mPicture = getPictureCallback();
 		
-		Button captureButton = (Button) findViewById(R.id.camera_capture);
+		mCaptureButton = (Button) findViewById(R.id.camera_capture);
 		
-		captureButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				mCameraFactory.takePicture(null, null, mPicture);
-				mCameraFactory.restartPreview();
-			}
-		});
+		btnCaptureSetting();
+		touchscreenSetting();
 	}
 	
 	@Override
@@ -93,5 +90,29 @@ public class CameraActivity extends Activity {
 				}
 			}
 		 };
+	}
+	
+	private void btnCaptureSetting() {
+		mCaptureButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				takePicture();
+			}
+		});
+	}
+	
+	private void touchscreenSetting() {
+		mPreview.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				takePicture();
+			}
+		});
+	}
+	
+	private void takePicture() {
+		mCameraFactory.takePicture(null, null, mPicture);
+		mCameraFactory.restartPreview();
 	}
 }

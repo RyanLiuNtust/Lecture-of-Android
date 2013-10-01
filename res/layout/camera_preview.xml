@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
+    
    	   <FrameLayout
        android:id="@+id/camera_preview"
        android:layout_width="wrap_content"
-       android:layout_height="fill_parent"
-       android:background="@android:color/transparent"
-       />
-       <Button
-       android:id="@+id/camera_capture"
-       android:text="@string/camera_capture"
-       android:layout_width="0dp"
-       android:layout_height="wrap_content"
-       android:layout_gravity="right"
-       android:layout_weight="0.1"
-       />
-   	   
+       android:layout_height="fill_parent"/>
+
    	   <Button
-   	   android:id="@+id/camera_swithcer"
-   	   android:layout_width="wrap_content"
-   	   android:layout_height="wrap_content"
-   	   android:background="@drawable/camera_switcher_selector"
-   	   android:layout_gravity="bottom"
-   	   />
-       
-</LinearLayout>
+   	       android:id="@+id/camera_capture"
+   	       android:layout_width="wrap_content"
+   	       android:layout_height="wrap_content"
+   	       android:layout_alignParentRight="true"
+   	       android:layout_centerVertical="true"
+   	       android:layout_marginRight="44dp"
+   	       android:alpha="0.5"
+   	       android:background="@drawable/ic_shutter"/>
+
+       <Button
+           android:id="@+id/action_setting"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_alignParentRight="true"
+           android:layout_alignParentTop="true"
+           android:alpha="0.5"
+           android:background="@drawable/icf_action_settings"/>
+
+       <Button
+           android:id="@+id/camera_swithcer"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_alignParentBottom="true"
+           android:layout_alignParentRight="true"
+           android:alpha="0.5"
+           android:background="@drawable/camera_switcher_selector"/>
+
+</RelativeLayout>
