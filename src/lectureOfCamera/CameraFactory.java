@@ -2,11 +2,9 @@ package lectureOfCamera;
 
 import java.io.IOException;
 
-import android.R.integer;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.database.CursorJoiner.Result;
 import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -17,6 +15,7 @@ public class CameraFactory {
 	private static final String TAG = "CameraFactory";
 	private Camera mCamera = null;
 	private SurfaceHolder mHolder = null;
+	private CameraSetting cameraSetting = new CameraSetting();
 	//if using thread to run it, it need to be asynchronous thread 
 	//to avoid interrupt the main thread operation
 	//there are specific cameras could be accessed by using Camera.open(int) method
@@ -37,8 +36,16 @@ public class CameraFactory {
 		mCamera.startPreview();
 	}
 	
-	public void takePicture(Camera.ShutterCallback shutter, Camera.PictureCallback raw, Camera.PictureCallback jpeg) {
+	public void takePicture(final Camera.ShutterCallback shutter, final Camera.PictureCallback raw, final Camera.PictureCallback jpeg) {
 		if(mCamera != null) {
+			mCamera.autoFocus(new Camera.AutoFocusCallback() {
+				
+				@Override
+				public void onAutoFocus(boolean success, Camera camera) {
+					Log.d("ryan","focus....");
+				}
+			});
+			Log.d("ryan", "take a picture");
 			mCamera.takePicture(shutter, raw, jpeg);
 		}
 	}
@@ -108,6 +115,7 @@ public class CameraFactory {
 			Camera.Size optimalSize = getOptimalPreviewSize(width, height, params);
 			
 			params.setPreviewSize(optimalSize.width, optimalSize.height);
+			params.setFocusMode(cameraSetting.getFocusMode());
 			mCamera.setParameters(params);
 		}
 		
@@ -130,6 +138,23 @@ public class CameraFactory {
 				}
 			}
 			return optimalSize;
+		}
+	}
+	
+	class CameraSetting {
+		int mCurrentSDK = utility.PackageManager.getSupportSDK();
+		
+		public String getFocusMode() {
+			String focusMode = null;
+			if(mCurrentSDK <= android.os.Build.VERSION_CODES.ECLAIR) {
+				 Log.d("ryan", "focus_mode_auto");
+				focusMode = Parameters.FOCUS_MODE_AUTO;
+			}
+			else {
+				Log.d("ryan", "focus_mode_continuous");
+				focusMode = Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
+			}
+			return focusMode;
 		}
 	}
 }
