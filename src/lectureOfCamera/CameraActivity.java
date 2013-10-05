@@ -24,25 +24,23 @@ import android.widget.FrameLayout;
 public class CameraActivity extends Activity {
 	
 	private static final String TAG = "CameraActivity";
+	private FrameLayout mView  = null;
+	private Button mCaptureButton = null;
 	private PictureCallback mPicture = null;
 	private CameraPreview mCameraPreview = null;
-	private CameraFactory mCameraFactory = new CameraFactory();
-	private FrameLayout mPreview = null;
-	private Button mCaptureButton = null;
+	private CameraFactory mCameraFactory = null;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.camera_preview);
 		
+		mCameraFactory = new CameraFactory(this);
 		//get an instance of Camera
 		mCameraFactory.getCameraInstance();
 		
-		//initialize the preview 
 		mCameraPreview = mCameraFactory.new CameraPreview(this);
-		
-		mPreview = (FrameLayout)findViewById(R.id.camera_preview);
-		mPreview.addView(mCameraPreview);
+		mView = (FrameLayout)findViewById(R.id.camera_preview);
 		
 		//set the data type in jpg and save in specific file directory
 		mPicture = getPictureCallback();
@@ -50,13 +48,7 @@ public class CameraActivity extends Activity {
 		mCaptureButton = (Button) findViewById(R.id.camera_capture);
 		
 		btnCaptureSetting();
-		touchscreenSetting();
-	}
-	
-	@Override
-	public void onPause() {
-		super.onPause();
-		Log.d(TAG,"onPause");
+		touchScreenSetting();
 	}
 	
 	@Override 
@@ -65,7 +57,7 @@ public class CameraActivity extends Activity {
 		Log.d(TAG,"onResume");
 		mCameraFactory.restartPreview();
 		mCameraPreview = mCameraFactory.new CameraPreview(this);
-		mPreview.addView(mCameraPreview);
+		mView.addView(mCameraPreview);
 	}
 	
 	private PictureCallback getPictureCallback() {
@@ -101,9 +93,8 @@ public class CameraActivity extends Activity {
 		});
 	}
 	
-	private void touchscreenSetting() {
-		mPreview.setOnClickListener(new OnClickListener() {
-			
+	private void touchScreenSetting() {
+		mView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				takePicture();
@@ -114,5 +105,14 @@ public class CameraActivity extends Activity {
 	private void takePicture() {
 		mCameraFactory.takePicture(null, null, mPicture);
 		mCameraFactory.restartPreview();
+	}
+	
+	public void changeCameraFacing(View view) {
+		mCameraPreview.removeHolderCallback();
+		mCameraFactory.changeCamera();
+		
+		mCameraFactory.restartPreview();
+		mCameraPreview = mCameraFactory.new CameraPreview(this);
+		mView.addView(mCameraPreview);
 	}
 }
