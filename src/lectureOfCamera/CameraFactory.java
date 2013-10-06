@@ -1,17 +1,12 @@
 package lectureOfCamera;
 
-import java.io.IOException;
-import java.util.List;
-
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
-import android.hardware.Camera.Parameters;
 import android.os.Build;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.widget.Toast;
 
 /*If you want to using camera on your application
  * please note that there are something need to add in your manifest
@@ -32,42 +27,43 @@ public class CameraFactory {
 	//Assume the all user's cell phone has front and back camera.......
 	private static final String TAG = "CameraFactory";
 	private int mFront = -1;
-	private int mBack = -1;
-	private boolean mIsFront;
-	private Camera mCamera = null;
+	private int mBack  = -1;
+	private Camera  mCamera  = null;
 	private Context mContext = null;
-	private CameraSetting mCameraSetting = new CameraSetting();
+	private boolean mIsFront = false;
+	private CameraSetting  mCameraSetting = null;
 	private PackageManager mPackageManager = null;
+	private static int mCurrentSDK = utility.PackageManager.getSupportSDK();
 	private AutoFocusCallback mFocusCallback = new Camera.AutoFocusCallback() {
 		// it will start when mode of focus is "focus_mode_auto" or "focus_mode_macro"
 		@Override
 		public void onAutoFocus(boolean success, Camera camera) {
-			Log.d("ryan","focus....");
+			Log.d("ryan","autofocus is starting....");
 		}
 	};
 	
 	public CameraFactory(Context context) {
 		mContext = context;
 		mPackageManager = mContext.getPackageManager();
+		getCameraInfo();
 	}
 	
 	public void getCameraInstance() {
 		try {
-			if(mCameraSetting.getCurrentSdk() >= Build.VERSION_CODES.GINGERBREAD){
-				Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-				for(int cameraId = 0; cameraId < Camera.getNumberOfCameras(); cameraId++) {
-					Camera.getCameraInfo(cameraId, cameraInfo);
-					if(cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) mFront = cameraId;
-					else if (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) mBack = cameraId;
-				}
+			if(mIsFront) {
+				Log.d("ryan","Front:" + mFront);
+				mCamera = Camera.open(mFront);
 			}
-			/////////////
-			mCamera = Camera.open(mBack);
-			mIsFront = false;
+			else {
+				Log.d("ryan","Back:" + mBack);
+				mCamera = Camera.open(mBack);
+			}
+			
+			mCameraSetting = new CameraSetting(mCamera);
 		}
 		catch (Exception e) {
-			Log.d(TAG,e.getMessage());
 			Log.d(TAG,"Can not get the camera instance");
+			Toast.makeText(mContext, "Can not open camera instance", Toast.LENGTH_SHORT).show();
 		}
 	}
 	
@@ -81,23 +77,34 @@ public class CameraFactory {
 		}
 	}
 	
-	public void changeCamera() {
-		removeCameraInstance();
+	public void changeCameraFacing() {
 		Log.d("ryan","IsFront:" + mIsFront);
-		if(mIsFront && mBack != -1) {
-			Log.d("ryan","change");
-			mCamera  = Camera.open(mBack);
-			mIsFront = false;
+		
+		try {
+			if(mCamera == null) {
+				if(mIsFront && mBack != -1) {
+					Log.d("ryan","change");
+					mCamera  = Camera.open(mBack);
+				}
+				else if(mFront != -1) {
+					Log.d("ryan","change to front");
+					mCamera  = Camera.open(mFront);
+				}
+			}
+		} catch (NullPointerException e) {
+			Log.d("ryan",e.getMessage());
+			Log.d("ryan","camera can not open");
 		}
-		else if(mFront != -1){
-			Log.d("ryan","change to front");
-			mCamera  = Camera.open(mFront);
-			mIsFront = true;
-		}
+		mCameraSetting = null;
+		mCameraSetting = new CameraSetting(mCamera);
+		
+		mIsFront = !mIsFront;
+		mCamera.startPreview();
 	}
 	
-	private void initCameraParams(int width, int height) {
+	public void initCameraParams(int width, int height) {
 		if(mCamera == null) return;
+		
 		String focusMode = null;
 		Camera.Parameters params = mCamera.getParameters();
 		
@@ -105,7 +112,7 @@ public class CameraFactory {
 		
 		params.setPreviewSize(optimalSize.width, optimalSize.height);
 		
-		Log.d("ryan","setpara IsFront:" + mIsFront);
+		Log.d("ryan","setparam IsFront:" + mIsFront);
 		
 		if(mIsFront == false && (focusMode = mCameraSetting.getFocusMode()) != null){
 			params.setFocusMode(focusMode);
@@ -134,114 +141,46 @@ public class CameraFactory {
 		return optimalSize;
 	}
 	
-	private void removeCameraInstance() {
+	public void removeCameraInstance() {
 		if(mCamera != null) {
 			Log.d("ryan","removeCameraInstance");
 			mCamera.stopPreview();
+			mCamera.setPreviewCallback(null);
 			mCamera.release();
 			mCamera = null;	
 		}
 	}
 	
+	private void getCameraInfo() {
+		if(mCurrentSDK >= Build.VERSION_CODES.GINGERBREAD){
+			Log.d("ryan", "getCameraInfo");
+			Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+			
+			for(int cameraId = 0; cameraId < Camera.getNumberOfCameras(); cameraId++) {
+				
+				Camera.getCameraInfo(cameraId, cameraInfo);
+				if(cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+					mFront = cameraId;
+					Log.d("ryan","front:" + mFront);
+				}
+				else if (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) {
+					mBack = cameraId;
+					Log.d("ryan","mBack:" + mBack);
+				}
+			}
+		}
+	}
+	
+	public Camera getCurrentCamera() {
+		return mCamera;
+	}
+	
 	public void restartPreview() {
 		if(mCamera == null) {
+			Log.d("ryan","Camera is null");
 			getCameraInstance();
 		}
+		Log.d("ryan","start preview");
 		mCamera.startPreview();
-	}
-	
-	public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
-		private SurfaceHolder mHolder = null;
-		
-		public CameraPreview(Context context) {
-			super(context);
-			//to get notified when the underlying surface is create or destroyed
-			mHolder = getHolder();
-			mHolder.addCallback(this);
-		}
-
-		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format, int width,int height) {
-			//If your preview can change or rotate,take care of those events here.
-			Log.d(TAG,"surfaceChanged");
-			if(mHolder.getSurface() == null) return;
-			
-			//stop preview before make changes
-			mCamera.stopPreview();
-			
-			//set preview size and make any resize, rotate or reformatting changes here
-			//......
-			initCameraParams(width,height);
-			
-			//start preview with new setting
-			try {
-				Log.d("ryan", "setpreviewdisplay");
-				mCamera.setPreviewDisplay(mHolder);
-				mCamera.startPreview();
-			} catch (IOException e) {
-				Log.d(TAG, "error starting camera preview: " + e.getMessage());
-			}
-			
-		}
-
-		@Override
-		public void surfaceCreated(SurfaceHolder holder) {
-			Log.d(TAG,"surfaceCreated");
-			try {
-				if(mCamera != null) {
-					mCamera.setPreviewDisplay(holder);
-					mCamera.startPreview();
-				}
-			} catch (IOException e) {
-				Log.d(TAG, e.getMessage());
-			}
-		}
-
-		@Override
-		public void surfaceDestroyed(SurfaceHolder holder) {
-			Log.d(TAG,"surfaceDestoryed");
-			
-			removeHolderCallback();
-			removeCameraInstance();
-		}
-		
-		public void removeHolderCallback() {
-			this.getHolder().removeCallback(this);
-		}
-	}
-	
-	public class CameraSetting {
-		int mCurrentSDK = utility.PackageManager.getSupportSDK();
-		List<String> mFocusModeList = null;
-		public CameraSetting() {
-			if(mCamera != null) {
-				mFocusModeList = mCamera.getParameters().getSupportedFocusModes();
-			}
-		}
-		
-		public int getCurrentSdk() {
-			return mCurrentSDK;
-		}
-		
-		public String getFocusMode() {
-			String focusMode = null;
-			if(mCurrentSDK <= android.os.Build.VERSION_CODES.ECLAIR) {
-				if(mFocusModeList.size() > 0) {
-					if(mFocusModeList.contains(Parameters.FOCUS_MODE_AUTO)){
-						Log.d("ryan", "FOCUS_MODE_AUTO");
-						focusMode = Parameters.FOCUS_MODE_AUTO;
-					}
-					else if(mFocusModeList.contains(Parameters.FOCUS_MODE_MACRO)) {
-						Log.d("ryan", "FOCUS_MODE_MACRO");
-						focusMode = Parameters.FOCUS_MODE_MACRO;
-					}
-				}
-			}
-			else {
-				Log.d("ryan", "FOCUS_MODE_CONTINUOUS_PICTURE");
-				focusMode = Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
-			}
-			return focusMode;
-		}
 	}
 }

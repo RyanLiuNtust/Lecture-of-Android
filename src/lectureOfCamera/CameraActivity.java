@@ -6,11 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import system.FilePoolManager;
-
-import com.example.lectureofandroid.R;
-
-import lectureOfCamera.CameraFactory;
-import lectureOfCamera.CameraFactory.CameraPreview;
 import android.app.Activity;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
@@ -20,6 +15,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
+
+import com.example.lectureofandroid.R;
    
 public class CameraActivity extends Activity {
 	
@@ -39,7 +36,6 @@ public class CameraActivity extends Activity {
 		//get an instance of Camera
 		mCameraFactory.getCameraInstance();
 		
-		mCameraPreview = mCameraFactory.new CameraPreview(this);
 		mView = (FrameLayout)findViewById(R.id.camera_preview);
 		
 		//set the data type in jpg and save in specific file directory
@@ -56,7 +52,8 @@ public class CameraActivity extends Activity {
 		super.onResume();
 		Log.d(TAG,"onResume");
 		mCameraFactory.restartPreview();
-		mCameraPreview = mCameraFactory.new CameraPreview(this);
+		mCameraPreview = new CameraPreview(this, mCameraFactory);
+		
 		mView.addView(mCameraPreview);
 	}
 	
@@ -108,11 +105,12 @@ public class CameraActivity extends Activity {
 	}
 	
 	public void changeCameraFacing(View view) {
-		mCameraPreview.removeHolderCallback();
-		mCameraFactory.changeCamera();
+		mCameraPreview.surfaceDestroyed(mCameraPreview.getSurfaceHolder());
+		mCameraFactory.removeCameraInstance();
 		
+		mCameraFactory.changeCameraFacing();
 		mCameraFactory.restartPreview();
-		mCameraPreview = mCameraFactory.new CameraPreview(this);
+		mCameraPreview = new CameraPreview(this, mCameraFactory);
 		mView.addView(mCameraPreview);
 	}
 }
