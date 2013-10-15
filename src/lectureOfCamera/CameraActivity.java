@@ -104,12 +104,13 @@ public class CameraActivity extends Activity {
 		mCameraFactory.restartPreview();
 	}
 	
+	//the camera change from back to front need to remove the origin view first
 	public void changeCameraFacing(View view) {
+		mView.removeView(mCameraPreview);
 		mCameraPreview.surfaceDestroyed(mCameraPreview.getSurfaceHolder());
 		mCameraFactory.removeCameraInstance();
 		
 		mCameraFactory.changeCameraFacing();
-		mCameraFactory.restartPreview();
 		mCameraPreview = new CameraPreview(this, mCameraFactory);
 		mView.addView(mCameraPreview);
 	}
