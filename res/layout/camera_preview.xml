@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    
+   	   <FrameLayout
+       android:id="@+id/camera_preview"
+       android:layout_width="wrap_content"
+       android:layout_height="fill_parent"/>
+
+   	   <Button
+   	       android:id="@+id/camera_capture"
+   	       android:layout_width="wrap_content"
+   	       android:layout_height="wrap_content"
+   	       android:layout_alignParentRight="true"
+   	       android:layout_centerVertical="true"
+   	       android:layout_marginRight="44dp"
+   	       android:alpha="0.5"
+   	       android:background="@drawable/ic_shutter"/>
+
+       <Button
+           android:id="@+id/action_setting"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_alignParentRight="true"
+           android:layout_alignParentTop="true"
+           android:alpha="0.5"
+           android:background="@drawable/icf_action_settings"/>
+
+       <Button
+           android:id="@+id/camera_swithcer"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_alignParentBottom="true"
+           android:layout_alignParentRight="true"
+           android:alpha="0.5"
+           android:onClick="changeCameraFacing"
+           android:background="@drawable/camera_switcher_selector"/>
+
+</RelativeLayout>
